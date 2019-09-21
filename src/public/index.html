@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="./stylesheet.css" media="screen"/>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+  <title>Bate-papo</title>
+</head>
+<body>
+  <form id="chat">
+    <input type="text" name="username" placeholder="digite seu nome"/>
+    <div class="messages"></div>
+    <input type="text" name="mensagem" placeholder="digite sua mensagem"/>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <script type="text/javascript">
+    var socket = io('http://localhost:3333');
+
+    function renderMesagem(message){
+      $('.messages').append(
+        `<div class="message">
+          <strong style="color:green;text-transform:uppercase">
+            ${message.author}
+          </strong>:
+          <span style="text-transform: lowercase;">
+            ${message.mensage}
+          </span>
+        </div>`
+      );
+    }
+
+    socket.on('preMesagem',mensages=>{
+      for(mensage of mensages){
+        renderMesagem(mensage);
+      }
+    });
+
+    socket.on('enviar',(message)=>{
+      renderMesagem(message);
+    });
+
+    $('#chat').submit(function(event){
+      event.preventDefault();
+
+      var author = $('input[name=username]').val();
+      var mensagem = $('input[name=mensagem]').val();
+
+      if(author.length && mensagem.length){
+        var messagesObject = {
+          author: author, 
+          mensage: mensagem
+        };
+        renderMesagem(messagesObject);
+        socket.emit('sendMesagem',messagesObject);
+      }
+    });
+  </script>
+</body>
+</html>
